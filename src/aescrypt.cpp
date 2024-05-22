@@ -905,7 +905,7 @@ void cleanup(const wchar_t *outfile)
     }
 }
 
-int main(int argc, wchar_t* argv[])
+int wmain(int argc, wchar_t* argv[])
 {
     int rc=0, passlen=0;
     FILE *infp = NULL;
