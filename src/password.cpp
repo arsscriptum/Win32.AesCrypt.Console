@@ -22,7 +22,7 @@
 #include <errno.h> // errno
 #include <wchar.h>
 
-#include "getopt.h"
+#include "opts.h"
 #include "password.h"
 
 /*

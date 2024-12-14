@@ -7,13 +7,22 @@
     <ClCompile Include="$(ProjectRoot)src\aescrypt.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="$(ProjectRoot)src\getopt.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="$(ProjectRoot)src\password.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="$(ProjectRoot)src\sha256.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\opts.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\log.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\terminal_formatting.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -22,9 +31,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(ProjectRoot)src\aescrypt.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(ProjectRoot)src\getopt.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(ProjectRoot)src\password.h">
@@ -40,6 +46,18 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\src\resource.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\opts.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\console_colors_define.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\log.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\terminal_formatting.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

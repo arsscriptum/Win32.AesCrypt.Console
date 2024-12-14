@@ -196,19 +196,25 @@
   <ItemGroup>
     <ClCompile Include="$(ProjectRoot)src\aes.cpp" />
     <ClCompile Include="$(ProjectRoot)src\aescrypt.cpp" />
-    <ClCompile Include="$(ProjectRoot)src\getopt.cpp" />
     <ClCompile Include="$(ProjectRoot)src\password.cpp" />
     <ClCompile Include="$(ProjectRoot)src\sha256.cpp" />
+    <ClCompile Include="..\src\log.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\opts.cpp" />
+    <ClCompile Include="..\src\terminal_formatting.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(ProjectRoot)src\aes.h" />
     <ClInclude Include="$(ProjectRoot)src\aescrypt.h" />
-    <ClInclude Include="$(ProjectRoot)src\getopt.h" />
     <ClInclude Include="$(ProjectRoot)src\password.h" />
     <ClInclude Include="$(ProjectRoot)src\sha256.h" />
     <ClInclude Include="$(ProjectRoot)src\targetver.h" />
     <ClInclude Include="$(ProjectRoot)src\version.h" />
+    <ClInclude Include="..\src\console_colors_define.h" />
+    <ClInclude Include="..\src\log.h" />
+    <ClInclude Include="..\src\opts.h" />
     <ClInclude Include="..\src\resource.h" />
+    <ClInclude Include="..\src\terminal_formatting.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AESCrypt.ico" />

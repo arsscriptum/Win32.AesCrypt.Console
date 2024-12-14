@@ -18,8 +18,9 @@
 #ifndef __AESCRYPT_PASSWORD_H__
 #define __AESCRYPT_PASSWORD_H__
 
+#define MIN_PASSWD_LEN  6
 #define MAX_PASSWD_LEN  1024
-
+#define MAX_FILENAME_LEN  1024
 typedef enum {UNINIT, DEC, ENC} encryptmode_t;
 
 /*
