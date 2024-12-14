@@ -28,6 +28,7 @@
 #include "opts.h"
 #include "aescrypt.h"
 #include "password.h"
+#include "log.h"
 #include "version.h"
 #include "aescrypt_defs.h"
 
@@ -51,9 +52,10 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     unsigned char               tag_buffer[256];
     HCRYPTPROV                  hProv;
     DWORD                       result_code;
-
+    COUTCMD("[encrypt_stream] - encrypt file %ls, len %d\n  [encrypt_stream] Prepare for random number generation", passwd, passlen);
+    COUTCMD("[encrypt_stream] Prepare for random number generation\n");
     // Prepare for random number generation
-    if (!CryptAcquireContext(   &hProv,
+     if (!CryptAcquireContext(   &hProv,
                                 NULL,
                                 NULL,
                                 PROV_RSA_FULL,
@@ -73,12 +75,13 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
             else
             {
                 result_code = ERROR_SUCCESS;
+                COUTCMD("[encrypt_stream] CryptAcquireContext OK\n");
             }
         }
 
         if (result_code != ERROR_SUCCESS)
         {
-            fprintf(stderr, "Could not acquire handle to crypto context");
+            COUTERR("Could not acquire handle to crypto context");
             return -1;
         }
     }
@@ -90,6 +93,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     // and using only a portion of the hash.  This IV and key
     // generation could be replaced with any good random
     // source of data.
+     COUTCMD("[encrypt_stream]  Create the 16-bit IV and 32-bit encryption key\n");
     memset(iv_key, 0, 48);
     for (i=0; i<48; i+=16)
     {
@@ -101,7 +105,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
                                 32,
                                 (BYTE *) buffer))
             {
-                fprintf(stderr, "Windows is unable to generate random digits");
+                COUTERR("Windows is unable to generate random digits");
                 return -1;
             }
             sha256_update(&sha_ctx, buffer, 32);
@@ -109,7 +113,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
         sha256_finish(&sha_ctx, digest);
         memcpy(iv_key+i, digest, 16);
     }
-
+    COUTCMD("[encrypt_stream] Write an AES signature at the head of the file, along with the AES file format version number.\n");
     // Write an AES signature at the head of the file, along
     // with the AES file format version number.
     buffer[0] = 'A';
@@ -119,7 +123,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     buffer[4] = '\0';                   // Reserved for version 0
     if (fwrite(buffer, 1, 5, outfp) != 5)
     {
-        fprintf(stderr, "Error: Could not write out header data\n");
+        COUTERR("Error: Could not write out header data\n");
         CryptReleaseContext(hProv, 0);
         return  -1;
     }
@@ -138,7 +142,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
         buffer[1] = (unsigned char) (j & 0xff);
         if (fwrite(buffer, 1, 2, outfp) != 2)
         {
-            fprintf(stderr, "Error: Could not write tag to AES file (1)\n");
+            COUTERR("Error: Could not write tag to AES file (1)\n");
             CryptReleaseContext(hProv, 0);
             return  -1;
         }
@@ -147,7 +151,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
         tag_buffer[255] = '\0';
         if (fwrite(tag_buffer, 1, 11, outfp) != 11)
         {
-            fprintf(stderr, "Error: Could not write tag to AES file (2)\n");
+            COUTERR("Error: Could not write tag to AES file (2)\n");
             CryptReleaseContext(hProv, 0);
             return  -1;
         }
@@ -156,25 +160,25 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
         j = (int) strlen((char *)tag_buffer);
         if (fwrite(tag_buffer, 1, j, outfp) != j)
         {
-            fprintf(stderr, "Error: Could not write tag to AES file (3)\n");
+            COUTERR("Error: Could not write tag to AES file (3)\n");
             CryptReleaseContext(hProv, 0);
             return  -1;
         }
     }
-
+    COUTCMD("[encrypt_stream]  Write out the \"container\" extension\n");
     // Write out the "container" extension
     buffer[0] = '\0';
     buffer[1] = (unsigned char) 128;
     if (fwrite(buffer, 1, 2, outfp) != 2)
     {
-        fprintf(stderr, "Error: Could not write tag to AES file (4)\n");
+        COUTERR("Error: Could not write tag to AES file (4)\n");
         CryptReleaseContext(hProv, 0);
         return  -1;
     }
     memset(tag_buffer, 0, 128);
     if (fwrite(tag_buffer, 1, 128, outfp) != 128)
     {
-        fprintf(stderr, "Error: Could not write tag to AES file (5)\n");
+        COUTERR("Error: Could not write tag to AES file (5)\n");
         CryptReleaseContext(hProv, 0);
         return  -1;
     }
@@ -184,11 +188,11 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     buffer[1] = '\0';
     if (fwrite(buffer, 1, 2, outfp) != 2)
     {
-        fprintf(stderr, "Error: Could not write tag to AES file (6)\n");
+        COUTERR("Error: Could not write tag to AES file (6)\n");
         CryptReleaseContext(hProv, 0);
         return  -1;
     }
-
+    COUTCMD("[encrypt_stream] Create a random IV\n");
     // Create a random IV
     sha256_starts(  &sha_ctx);
 
@@ -198,7 +202,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
                             32,
                             (BYTE *) buffer))
         {
-            fprintf(stderr, "Windows is unable to generate random digits");
+            COUTERR("Windows is unable to generate random digits");
             CryptReleaseContext(hProv, 0);
             return  -1;
         }
@@ -213,15 +217,16 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
 
     // We're finished collecting random data
     CryptReleaseContext(hProv, 0);
-
+    COUTCMD("[encrypt_stream] CryptReleaseContext\n");
     // Write the initialization vector to the file
     if (fwrite(IV, 1, 16, outfp) != 16)
     {
-        fprintf(stderr, "Error: Could not write out initialization vector\n");
+        COUTERR("Error: Could not write out initialization vector\n");
         return  -1;
     }
     
     // Hash the IV and password 8192 times
+    COUTCMD("[encrypt_stream]  Hash the IV and password 8192 times\n");
     memset(digest, 0, 32);
     memcpy(digest, IV, 16);
     for(i=0; i<8192; i++)
@@ -237,7 +242,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
 
     // Set the AES encryption key
     aes_set_key(&aes_ctx, digest, 256);
-
+    COUTCMD("[encrypt_stream] Set the AES encryption key\n");
     // Set the ipad and opad arrays with values as
     // per RFC 2104 (HMAC).  HMAC is defined as
     //   H(K XOR opad, H(K XOR ipad, text))
@@ -277,7 +282,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
         // Write the encrypted block
         if (fwrite(buffer, 1, 16, outfp) != 16)
         {
-            fprintf(stderr, "Error: Could not write iv_key data\n");
+            COUTERR("Error: Could not write iv_key data\n");
             return  -1;
         }
         
@@ -294,7 +299,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     // Write the encrypted block
     if (fwrite(digest, 1, 32, outfp) != 32)
     {
-        fprintf(stderr, "Error: Could not write iv_key HMAC\n");
+        COUTERR("Error: Could not write iv_key HMAC\n");
         return  -1;
     }
 
@@ -345,7 +350,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
         // Write the encrypted block
         if (fwrite(buffer, 1, 16, outfp) != 16)
         {
-            fprintf(stderr, "Error: Could not write to output file\n");
+            COUTERR("Error: Could not write to output file\n");
             return  -1;
         }
         
@@ -359,7 +364,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     // Check to see if we had a read error
     if (n < 0)
     {
-        fprintf(stderr, "Error: Couldn't read input file\n");
+        COUTERR("Error: Couldn't read input file\n");
         return  -1;
     }
 
@@ -367,7 +372,7 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     buffer[0] = (char) (aeshdr.last_block_size & 0x0F);
     if (fwrite(buffer, 1, 1, outfp) != 1)
     {
-        fprintf(stderr, "Error: Could not write the file size modulo\n");
+        COUTERR("Error: Could not write the file size modulo\n");
         return  -1;
     }
 
@@ -379,14 +384,14 @@ int encrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     sha256_finish(&sha_ctx, digest);
     if (fwrite(digest, 1, 32, outfp) != 32)
     {
-        fprintf(stderr, "Error: Could not write the file HMAC\n");
+        COUTERR("Error: Could not write the file HMAC\n");
         return  -1;
     }
 
     // Flush the output buffer to ensure all data is written to disk
     if (fflush(outfp))
     {
-        fprintf(stderr, "Error: Could not flush output file buffer\n");
+        COUTERR("Error: Could not flush output file buffer\n");
         return -1;
     }
 
@@ -418,7 +423,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     {
         if (feof(infp))
         {
-            fprintf(stderr, "Error: Input file is too short.\n");
+            COUTERR("Error: Input file is too short.\n");
         }
         else
         {
@@ -430,7 +435,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     if (!(aeshdr.aes[0] == 'A' && aeshdr.aes[1] == 'E' &&
           aeshdr.aes[2] == 'S'))
     {
-        fprintf(stderr, "Error: Bad file header (not aescrypt file or is corrupted? [%x, %x, %x])\n", aeshdr.aes[0], aeshdr.aes[1], aeshdr.aes[2]);
+        COUTERR("Error: Bad file header (not aescrypt file or is corrupted? [%x, %x, %x])\n", aeshdr.aes[0], aeshdr.aes[1], aeshdr.aes[2]);
         return  -1;
     }
 
@@ -443,7 +448,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     }
     else if (aeshdr.version > 0x02)
     {
-        fprintf(stderr, "Error: Unsupported AES file version: %d\n",
+        COUTERR("Error: Unsupported AES file version: %d\n",
                 aeshdr.version);
         return  -1;
     }
@@ -457,7 +462,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
             {
                 if (feof(infp))
                 {
-                    fprintf(stderr, "Error: Input file is too short.\n");
+                    COUTERR("Error: Input file is too short.\n");
                 }
                 else
                 {
@@ -473,7 +478,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
                 {
                     if (feof(infp))
                     {
-                        fprintf(stderr, "Error: Input file is too short.\n");
+                        COUTERR("Error: Input file is too short.\n");
                     }
                     else
                     {
@@ -490,7 +495,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     {
         if (feof(infp))
         {
-            fprintf(stderr, "Error: Input file is too short.\n");
+            COUTERR("Error: Input file is too short.\n");
         }
         else
         {
@@ -541,7 +546,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
             {
                 if (feof(infp))
                 {
-                    fprintf(stderr, "Error: Input file is too short.\n");
+                    COUTERR("Error: Input file is too short.\n");
                 }
                 else
                 {
@@ -577,7 +582,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
         {
             if (feof(infp))
             {
-                fprintf(stderr, "Error: Input file is too short.\n");
+                COUTERR("Error: Input file is too short.\n");
             }
             else
             {
@@ -588,7 +593,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
 
         if (memcmp(digest, buffer, 32))
         {
-            fprintf(stderr, "Error: Message has been altered or password is incorrect\n");
+            COUTERR("Error: Message has been altered or password is incorrect\n");
             return  -1;
         }
 
@@ -638,7 +643,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
             if ((aeshdr.version == 0x00 && bytes_read != 32) ||
                 (aeshdr.version >= 0x01 && bytes_read != 33))
             {
-                fprintf(stderr, "Error: Input file is corrupt (1:%d).\n",
+                COUTERR("Error: Input file is corrupt (1:%d).\n",
                         bytes_read);
                 return -1;
             }
@@ -657,7 +662,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
                 // data, then there should be 0 in the last_block_size field
                 if (aeshdr.last_block_size != 0)
                 {
-                    fprintf(stderr, "Error: Input file is corrupt (2).\n");
+                    COUTERR("Error: Input file is corrupt (2).\n");
                     return -1;
                 }
             }
@@ -688,7 +693,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
                 if ((aeshdr.version == 0x00 && bytes_read > 0) ||
                     (aeshdr.version >= 0x01 && bytes_read != 1))
                 {
-                    fprintf(stderr, "Error: Input file is corrupt (3:%d).\n",
+                    COUTERR("Error: Input file is corrupt (3:%d).\n",
                             bytes_read);
                     return -1;
                 }
@@ -800,11 +805,11 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     {
         if (aeshdr.version == 0x00)
         {
-            fprintf(stderr, "Error: Message has been altered or password is incorrect\n");
+            COUTERR("Error: Message has been altered or password is incorrect\n");
         }
         else
         {
-            fprintf(stderr, "Error: Message has been altered and should not be trusted\n");
+            COUTERR("Error: Message has been altered and should not be trusted\n");
         }
 
         return -1;
@@ -813,7 +818,7 @@ int decrypt_stream(FILE *infp, FILE *outfp, wchar_t* passwd, int passlen)
     // Flush the output buffer to ensure all data is written to disk
     if (fflush(outfp))
     {
-        fprintf(stderr, "Error: Could not flush output file buffer\n");
+        COUTERR("Error: Could not flush output file buffer\n");
         return -1;
     }
 

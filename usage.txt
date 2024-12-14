@@ -1,0 +1,20 @@
+AesCrypter 1.0.0
+Usage: AesCrypter.exe {--encrypt|--decrypt|--analyse} file [options]
+
+Operations:
+  -d, --decrypt              : Decrypt a file.
+  -e, --encrypt              : Encrypt a file.
+  -a, --analyse              : Analyse a file.
+
+Options:
+  -p, --password <string>    : Use a clear password string.
+  -c, --cert <path>          : Use a certificate for encryption/decryption.
+  -k, --key-file <path>      : Encrypt/decrypt using a key stored in a file.
+  -g, --generate <path>      : Only with "encrypt" option: Generate a key and store it in a file.
+  -h, --help                 : Show this help message.
+
+Examples:
+  AesCrypter.exe --encrypt file.txt --password "mypassword" --generate "keyfile.key"
+  AesCrypter.exe --decrypt file.txt --key-file "keyfile.key"
+  AesCrypter.exe --analyse file.txt
+  AesCrypter.exe --encrypt file.txt --password "mypassword" --key-file "keyfile.key"

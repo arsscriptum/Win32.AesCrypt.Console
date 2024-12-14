@@ -25,6 +25,7 @@
 #include "opts.h"
 #include "password.h"
 
+bool firstPasswordPrompt = true;
 /*
  *  read_password_error
  *
@@ -36,6 +37,8 @@ const wchar_t* read_password_error(int error)
         return L"user aborted";
     if (error == AESCRYPT_READPWD_TOOLONG)
         return L"password too long";
+    if (error == AESCRYPT_READPWD_TOOSHORT)
+        return L"password too short";
     if (error == AESCRYPT_READPWD_NOMATCH)
         return L"passwords don't match";
     return L"No valid error code specified!!!";
@@ -66,7 +69,7 @@ int read_password(wchar_t* buffer, operatingmode_t mode)
 
     // Round 1 - Read the password into buffer
     // (If encoding) Round 2 - read password 2 for confirmation
-    for (i = 0; (i == 0) || (i == 1 && mode == ENC); i++)
+    for (i = 0; (i == 0) || (i == 1 && mode == ENCRYPT); i++)
     {
         // Choose the buffer where to put the password
         if (!i)
@@ -83,8 +86,17 @@ int read_password(wchar_t* buffer, operatingmode_t mode)
         {
             wprintf(L"Re-");
         }
-        wprintf(L"Enter password: ");
-        fflush(stdout);
+        if (firstPasswordPrompt) {
+            firstPasswordPrompt = false;
+            
+            wprintf(L"Enter password (min %d to %d characters max): ", MIN_PASSWD_LEN, MAX_PASSWD_LEN);
+            fflush(stdout);
+        }
+        else {
+            wprintf(L"Enter password: ");
+            fflush(stdout);
+        }
+       
 
         // Read from input and fill buffer till MAX_PASSWD_LEN chars are read
         chars_read = 0;
@@ -122,7 +134,7 @@ int read_password(wchar_t* buffer, operatingmode_t mode)
     }
 
     // Password must be compared only when encrypting
-    if (mode == ENC)
+    if (mode == ENCRYPT)
     {
         // Check if passwords match
         match = wcscmp(buffer, pwd_confirm);
@@ -135,6 +147,11 @@ int read_password(wchar_t* buffer, operatingmode_t mode)
             return AESCRYPT_READPWD_NOMATCH;
         }
     }
-
+    if (chars_read < MIN_PASSWD_LEN) {
+        return AESCRYPT_READPWD_TOOSHORT;
+    }
+    if (chars_read > MAX_PASSWD_LEN) {
+        return AESCRYPT_READPWD_TOOLONG;
+    }
     return chars_read;
 }

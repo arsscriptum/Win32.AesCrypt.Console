@@ -139,7 +139,6 @@ void __cdecl ConsoleCmdOptionW(const char* name, std::wstring  wstr_value)
 }
 void __cdecl ConsoleError(const char *format, ...)
 {
-	if (!gLogsEnabled) { return; }
 	char    buf[4096], *p = buf;
 	va_list args;
 	int     n;

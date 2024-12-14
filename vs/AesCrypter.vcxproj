@@ -210,6 +210,7 @@
     <ClInclude Include="$(ProjectRoot)src\sha256.h" />
     <ClInclude Include="$(ProjectRoot)src\targetver.h" />
     <ClInclude Include="$(ProjectRoot)src\version.h" />
+    <ClInclude Include="..\src\aescrypt_defs.h" />
     <ClInclude Include="..\src\console_colors_define.h" />
     <ClInclude Include="..\src\log.h" />
     <ClInclude Include="..\src\opts.h" />

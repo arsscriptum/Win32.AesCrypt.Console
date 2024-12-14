@@ -24,15 +24,26 @@
 
 
 #define MIN_PASSWD_LEN  6
-#define MAX_PASSWD_LEN  1024
+#define MAX_PASSWD_LEN  64
 #define MAX_FILENAME_LEN  1024
+
+#define APP_ExECUTABLE L"AesCrypter.exe"
+#define APP_NAME "AesCrypter"
 
 typedef enum {
     UNINIT = 0,
-    DEC = 1,
-    ENC = 2,
+    DECRYPT = 1,
+    ENCRYPT = 2,
     ANALYSE = 3
 } operatingmode_t;
+
+typedef enum {
+    NONE = -1,
+    PASSWORD = 0,
+    KEYFILE = 1,
+    CERTIFICATE = 2,
+    SYSTEM = 3
+} encryptingmode_t;
 
 
 // Structure to hold command line options
@@ -41,6 +52,7 @@ struct aescrypter_options {
     int decrypt;
     int analyse;
     int mode;
+    int force;
     int read_password;
     int input_file_set;
     int output_file_set;
@@ -56,7 +68,7 @@ struct aescrypter_options {
     wchar_t* output_file;
     // Constructor to initialize default values
     aescrypter_options()
-        : encrypt(0), decrypt(0), analyse(0), read_password(0), input_file_set(0), output_file_set(0),
+        : encrypt(0), decrypt(0), analyse(0), read_password(0), input_file_set(0), output_file_set(0), force(0),
         password(nullptr), cert_path(nullptr),
         key_file(nullptr), generate_path(nullptr), input_file(nullptr), output_file(nullptr)
     {

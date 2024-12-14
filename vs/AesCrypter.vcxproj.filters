@@ -60,6 +60,9 @@
     <ClInclude Include="..\src\terminal_formatting.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\aescrypt_defs.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">

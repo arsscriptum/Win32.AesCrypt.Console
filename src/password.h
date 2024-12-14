@@ -24,7 +24,8 @@
  */
 #define AESCRYPT_READPWD_GETWCHAR    -5 
 #define AESCRYPT_READPWD_TOOLONG     -6
-#define AESCRYPT_READPWD_NOMATCH     -7
+#define AESCRYPT_READPWD_TOOSHORT    -7
+#define AESCRYPT_READPWD_NOMATCH     -8
 
 /*
  * Function Prototypes

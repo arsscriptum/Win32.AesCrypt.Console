@@ -39,6 +39,7 @@ void show_banner();
 void show_version();
 void cleanup(const wchar_t* outfile);
 bool file_exists(const std::wstring& filename);
+bool delete_file_if_exists(const std::string& file_name);
 std::wstring generate_output_filename(const std::wstring& input_file, int mode);
 int encrypt_stream(FILE* infp, FILE* outfp, wchar_t* passwd, int passlen);
 int decrypt_stream(FILE* infp, FILE* outfp, wchar_t* passwd, int passlen);
