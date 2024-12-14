@@ -29,7 +29,7 @@
 #include "aescrypt.h"
 #include "password.h"
 #include "version.h"
-
+#include "aescrypt_defs.h"
 
 
 /*

@@ -18,11 +18,7 @@
 #ifndef __AESCRYPT_PASSWORD_H__
 #define __AESCRYPT_PASSWORD_H__
 
-#define MIN_PASSWD_LEN  6
-#define MAX_PASSWD_LEN  1024
-#define MAX_FILENAME_LEN  1024
-typedef enum {UNINIT, DEC, ENC} encryptmode_t;
-
+#include "aescrypt_defs.h"
 /*
  * Error codes for read_password function.
  */
@@ -34,7 +30,6 @@ typedef enum {UNINIT, DEC, ENC} encryptmode_t;
  * Function Prototypes
  */
 const wchar_t* read_password_error(int error);
-int read_password(wchar_t* buffer,
-                  encryptmode_t mode);
+int read_password(wchar_t* buffer, operatingmode_t mode);
 
 #endif // __AESCRYPT_PASSWORD_H__

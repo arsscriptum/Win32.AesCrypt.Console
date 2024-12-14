@@ -21,7 +21,7 @@
 #include <stdlib.h> // malloc
 #include <errno.h> // errno
 #include <wchar.h>
-
+#include "log.h"
 #include "opts.h"
 #include "password.h"
 
@@ -54,8 +54,9 @@ const wchar_t* read_password_error(int error)
  *    < 0 error (return value indicating the specific error)
  */
 
-int read_password(wchar_t* buffer, encryptmode_t mode)
+int read_password(wchar_t* buffer, operatingmode_t mode)
 {
+    COUTCMD("read_password mode %d", (int)mode);
     wchar_t pwd_confirm[MAX_PASSWD_LEN+1]; // Used for password confirmation
     wint_t c;                              // Character read from input
     int chars_read;                        // Chars read from input
